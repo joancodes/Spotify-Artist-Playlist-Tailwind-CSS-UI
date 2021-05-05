@@ -1,39 +1,48 @@
-let musicNames = [
+let playlists = [
   {
     selected: false,
-    name: "This is Lizzo",
+    name: "Lizzo",
+    image: "../images/album-images/lizzo.jpg",
   },
   {
     selected: false,
-    name: "This is H.E.R",
+    name: "H.E.R",
+    image: "../images/album-images/her.webp",
   },
   {
     selected: false,
-    name: "This is CHIKA",
+    name: "CHIKA",
+    image: "../images/album-images/chika.jpg",
   },
   {
     selected: true,
-    name: "This is Alan Walker",
+    name: "Alan Walker",
+    image: "../images/AW.jpg",
   },
   {
     selected: false,
-    name: "This Chloe x Halle",
+    name: "Chloe x Halle",
+    image: "../images/album-images/chloe.webp",
   },
   {
     selected: false,
-    name: "This is Bruno Mars",
+    name: "Bruno Mars",
+    image: "../images/album-images/bruno_mars.jpg",
   },
   {
     selected: false,
-    name: "This is Fuse ODG",
+    name: "Fuse ODG",
+    image: "../images/album-images/fuse_odg.webp",
   },
   {
     selected: false,
-    name: "This Meghan Trainor",
+    name: "Meghan Trainor",
+    image: "../images/album-images/meghan.jpg",
   },
   {
     selected: false,
-    name: "This is Anne Marie",
+    name: "Anne Marie",
+    image: "../images/album-images/ann_marie.webp",
   },
 ];
 
@@ -52,6 +61,41 @@ class="Svg-ulyrgf-0 hJgLcF"
 
 const sideBarUl = document.getElementById("sidebar-playlist");
 const playListTitle = document.getElementById("playlist-title");
+const playlistThumbnail = document.getElementById("playlist-thumbnail");
+const playlistDescription = document.getElementById("playlist-description");
+const songName = document.getElementById("song-name");
+const artistName = document.getElementById("artist-name");
+const timeElapsed = document.getElementById("time-elapsed");
+const duration = document.getElementById("duration");
+const progress = document.getElementById("progress");
+const playBtn = document.getElementById("play-btn");
+
+playBtn.addEventListener("click", function () {
+  playPause();
+});
+
+const sound = new Howl({
+  src: ["../music/alan_walker_the_spectre.mp3"],
+  onend: function () {
+    console.log("Finished!");
+  },
+});
+
+setInterval(() => {
+  updateProgress();
+}, 300);
+
+function updateProgress() {
+  if (sound?.playing()) {
+    const dur = moment.unix(sound.seek());
+    const formatted = dur.format("mm:ss");
+    timeElapsed.textContent = formatted;
+    let seek = sound.seek() || 0;
+    let width = ((seek / sound.duration()) * 100 || 0) + "%";
+    progress.style.width = width;
+    //console.log(width);
+  }
+}
 
 let liEntries = [];
 
@@ -59,15 +103,17 @@ init();
 
 function init() {
   clearPreviousListEntries();
-  for (let i = 0; i < musicNames.length; i++) {
+  for (let i = 0; i < playlists.length; i++) {
     const liEntry = document.createElement("li");
-    liEntry.appendChild(document.createTextNode(musicNames[i].name));
+    liEntry.appendChild(document.createTextNode(playlists[i].name));
     liEntry.addEventListener("click", function () {
-      highlightSelected(musicNames[i].name);
+      highlightSelected(playlists[i].name);
     });
     sideBarUl.appendChild(liEntry);
-    if (musicNames[i].selected) {
-      playListTitle.innerHTML = getPlayListTitle(musicNames[i].name);
+    if (playlists[i].selected) {
+      playlistThumbnail.src = playlists[i].image;
+      playListTitle.innerHTML = getPlayListTitle(playlists[i].name);
+      playlistDescription.textContent = `The essential ${playlists[i].name} tracks and remixes.`;
       liEntry.className =
         "mt-2 text-white font-bold cursor-default flex justify-between items-center";
       const speakerSpan = document.createElement("span");
@@ -87,13 +133,13 @@ function getPlayListTitle(musicName) {
 
 function highlightSelected(musicName) {
   let newList = [];
-  for (let i = 0; i < musicNames.length; i++) {
-    let mn = musicNames[i];
+  for (let i = 0; i < playlists.length; i++) {
+    let mn = playlists[i];
     mn.selected = musicName === mn.name;
     newList.push(mn);
   }
-  musicNames = [];
-  musicNames = [...new Set(newList)];
+  playlists = [];
+  playlists = [...new Set(newList)];
   init();
 }
 
@@ -101,4 +147,11 @@ function clearPreviousListEntries() {
   for (let p = 0; p < liEntries.length; p++) {
     liEntries[p].remove();
   }
+}
+
+function playPause() {
+  const dur = moment.unix(sound.duration());
+  const formatted = dur.format("mm:ss");
+  duration.textContent = formatted;
+  sound?.playing() ? sound?.pause() : sound?.play();
 }
